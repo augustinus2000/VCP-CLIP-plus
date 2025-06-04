@@ -3,7 +3,7 @@
 
 **VCP-CLIP: A visual context prompting model for zero-shot anomaly segmentation**
 
-**(This project is being continuously updated)**
+Note that VCP-CLIP is only evaluated on the zero-shot anomaly segmentation task. For further extensions, including zero-shot anomaly classification and dataset processing, please refer to our latest paper, [Bayes-PFL](https://github.com/xiaozhen228/Bayes-PFL)
 
 Zhen Qu, Xian Tao, Mukesh Prasad, Fei Shen, Zhengtao Zhang, Xinyi Gong, Guiguang Ding
 
