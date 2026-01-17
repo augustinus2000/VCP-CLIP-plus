@@ -30,12 +30,17 @@ def evaluate_pre(test_dataloader, model, linearlayer, New_Lan_Embed,prompt_ceshi
         gt_mask[gt_mask > 0.5], gt_mask[gt_mask <= 0.5] = 1, 0
         results['imgs_masks'].append(gt_mask)  # px
         
-        with torch.no_grad(), torch.cuda.amp.autocast():
+        with torch.no_grad(), torch.amp.autocast("cuda", dtype=torch.float16):
             image_features, patch_tokens = model.encode_image(image, args.features_list)
 
-            # sample
             patch_tokens = linearlayer(patch_tokens)
-            class_token = New_Lan_Embed.before_extract_feat(patch_tokens,image_features.clone(), use_global = args.use_global)
+            
+            image_features = model.prompt_token_embedding(image_features)
+            
+            # class_token = New_Lan_Embed.before_extract_feat(patch_tokens,image_features.clone(), use_global = args.use_global)
+
+            class_token = image_features.unsqueeze(1)
+
             text_embeddings = prompt_ceshi.forward_ensemble(model, class_token, device)
 
             text_embeddings = text_embeddings.permute(0,2,1)
@@ -96,10 +101,15 @@ def evaluate_post(test_dataloader, model, linearlayer, New_Lan_Embed,Zero_try, p
         gt_mask[gt_mask > 0.5], gt_mask[gt_mask <= 0.5] = 1, 0
         results['imgs_masks'].append(gt_mask)  # px
         
-        with torch.no_grad(), torch.cuda.amp.autocast():
+        with torch.no_grad(), torch.amp.autocast("cuda", dtype=torch.float16):
             image_features, patch_tokens = model.encode_image(image, args.features_list)
+            
+            image_features = model.prompt_token_embedding(image_features)
 
-            class_token = New_Lan_Embed.before_extract_feat(patch_tokens,image_features.clone(), use_global = args.use_global)
+            # class_token = New_Lan_Embed.before_extract_feat(patch_tokens,image_features.clone(), use_global = args.use_global)
+            
+            class_token = image_features.unsqueeze(1)
+
             text_embeddings = prompt_ceshi.forward_ensemble(model, class_token, device)
 
             text_embeddings = text_embeddings.permute(0,2,1)
@@ -177,18 +187,20 @@ def evaluate(test_dataloader, model, linearlayer, New_Lan_Embed,Zero_try, prompt
         results['gt_sp'].extend(items['anomaly'])
         
 
-        with torch.no_grad(), torch.cuda.amp.autocast():
+        with torch.no_grad(), torch.amp.autocast("cuda", dtype=torch.float16):
             image_features, patch_tokens = model.encode_image(image, args.features_list)
-
-            class_token = New_Lan_Embed.before_extract_feat(patch_tokens,image_features.clone(), use_global = args.use_global)
+            image_features = model.prompt_token_embedding(image_features)
+            # class_token = New_Lan_Embed.before_extract_feat(patch_tokens,image_features.clone(), use_global = args.use_global)
+            class_token = image_features.unsqueeze(1)
             text_embeddings = prompt_ceshi.forward_ensemble(model, class_token, device)
-
             text_embeddings = text_embeddings.permute(0,2,1)
             anomaly_maps_new = []
 
             for layer in range(len(patch_tokens)):
+
                 dense_feature = patch_tokens[layer][:,1:,:].clone()
                 dense_feature = dense_feature /  dense_feature.norm(dim=-1, keepdim = True)
+            
                 F_s_a, F_t_a = Zero_try(text_embeddings.permute(0,2,1), dense_feature)
                 anomaly_map_new = (Zero_try.prompt_temp_l1.exp() * dense_feature @ F_t_a.permute(0,2,1))
                 B, L, C = anomaly_map_new.shape 

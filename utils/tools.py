@@ -67,49 +67,42 @@ def he_cheng(img_list, size = 256):
     vis_con = cv2.resize(vis_con, (size*len(img_list)+ 10*(len(img_list)-1), size)).astype(np.uint8)
     return vis_con
 
-
-def visualization(save_root, pic_name, raw_image, raw_anomaly_map, raw_gt, the = 0.5, size = 518):
+def visualization(save_root, pic_name, raw_image, raw_anomaly_map, raw_gt,
+                  the=0.5, size=518, save_only_crop=True):
     if not os.path.exists(save_root):
         os.makedirs(save_root)
-    
     pic_name = pic_name.replace("bmp", "png")
 
-    
     assert len(raw_image.shape) == 3 and len(raw_anomaly_map.shape) == 2 and len(raw_gt.shape) == 2
-    map = raw_anomaly_map
-    gt = raw_gt
+    img = cv2.cvtColor(raw_image, cv2.COLOR_BGR2RGB)
 
-    #np.save(os.path.join(save_root, "text_"+pic_name.replace('bmp', 'npy')), text)
-    #np.save(os.path.join(save_root, "vis_map_"+pic_name.replace('bmp', 'npy')), map)
-    #np.save(os.path.join(save_root, "gt_"+pic_name.replace('bmp', 'npy')), gt)
+    # normalize & binary/crop
+    amap = normalize(raw_anomaly_map)
+    gt   = normalize(raw_gt)
+    map_binary = (raw_anomaly_map > the).astype(np.uint8)
+    map_crop   = amap * map_binary
 
-    
-    
-    img = cv2.cvtColor(raw_image , cv2.COLOR_BGR2RGB)
-    map = normalize(raw_anomaly_map)
-    gt = normalize(raw_gt)
-    map_binary = np.array(raw_anomaly_map> the, dtype= np.uint8)
-    map_crop = map * map_binary
+    # GT contour
+    ground_truth_contours, _ = cv2.findContours((raw_gt*255).astype(np.uint8),
+                                                cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    ground_truth_contours, _ = cv2.findContours(np.array(raw_gt * 255, dtype = np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    vis_map = apply_ad_scoremap(img, map)
-    vis_gt = apply_ad_scoremap(img, gt)
+    # 4가지 시각화 생성
+    vis_map        = apply_ad_scoremap(img, amap)
+    vis_gt         = apply_ad_scoremap(img, gt)
     vis_map_binary = apply_ad_scoremap(img, map_binary)
-    vis_map_crop = apply_ad_scoremap(img, map_crop)
+    vis_map_crop   = apply_ad_scoremap(img, map_crop)
 
-    vis_map = cv2.cvtColor(vis_map, cv2.COLOR_RGB2BGR)
-    vis_gt = cv2.cvtColor(vis_gt, cv2.COLOR_RGB2BGR)
+    # BGR로 되돌리기 + GT 컨투어 그리기(원하면 유지)
+    vis_map        = cv2.cvtColor(vis_map, cv2.COLOR_RGB2BGR)
+    vis_gt         = cv2.cvtColor(vis_gt, cv2.COLOR_RGB2BGR)
     vis_map_binary = cv2.cvtColor(vis_map_binary, cv2.COLOR_RGB2BGR)
-    vis_map_crop = cv2.cvtColor(vis_map_crop, cv2.COLOR_RGB2BGR)
+    vis_map_crop   = cv2.cvtColor(vis_map_crop, cv2.COLOR_RGB2BGR)
+    vis_map_binary = cv2.drawContours(vis_map_binary, ground_truth_contours, -1, (0,255,0), 2)
+    vis_map_crop   = cv2.drawContours(vis_map_crop,   ground_truth_contours, -1, (0,255,0), 2)
 
-    vis_map_binary = cv2.drawContours(vis_map_binary, ground_truth_contours, -1, (0, 255, 0), 2)
-    vis_map_crop = cv2.drawContours(vis_map_crop, ground_truth_contours, -1, (0, 255, 0), 2)  
-
-    zong = he_cheng([raw_image, vis_map, vis_map_crop, vis_gt])
-    #cv2.imwrite(os.path.join(save_root, "vis_map_"+pic_name), vis_map)
-    #cv2.imwrite(os.path.join(save_root, "vis_gt_"+pic_name), vis_gt)
-    #cv2.imwrite(os.path.join(save_root, "vis_map_binary_"+pic_name), vis_map_binary)
-    #cv2.imwrite(os.path.join(save_root, "vis_map_crop_"+pic_name), vis_map_crop)
-    cv2.imwrite(os.path.join(save_root, "vis_zong_"+pic_name), zong)
-    
+    if save_only_crop:
+        out = cv2.resize(vis_map_crop, (size, size), interpolation=cv2.INTER_LINEAR)
+        cv2.imwrite(os.path.join(save_root, f"vis_crop_{pic_name}"), out)
+    else:
+        zong = he_cheng([raw_image, vis_map, vis_map_crop, vis_gt], size=size)
+        cv2.imwrite(os.path.join(save_root, f"vis_zong_{pic_name}"), zong)
