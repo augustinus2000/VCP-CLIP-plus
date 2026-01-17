@@ -163,17 +163,19 @@ Which produces:
 
 
 2. **(Optional) Download our pretrained weight**  
-   We provide a VCP-CLIP+ weight **trained on the VisA dataset**:
+   A pretrained VCP-CLIP+ checkpoint (trained on **VisA**) is available in the  
+👉 **[Releases](https://github.com/augustinus2000/VCP-CLIP-plus/releases)** section.
+
+This checkpoint was obtained from the version of VCP-CLIP+ that is  
+**most closely aligned with the full-model configuration described in our paper**  
+(currently under review).  
+Although exact performance numbers are not provided here, this weight can be  
+used for inference, visualization, and reproducing the qualitative behavior  
+of the full VCP-CLIP+ model.
+
+After downloading, place the file under:
 
 ./weights/vcpclip_plus_visa.pth
-
-   - This checkpoint can be used to **test or visualize** anomaly maps directly.
-   - Since the paper is under review, we provide only the weights, not performance numbers.
-
-> **Note:**  
-> VCP-CLIP+ uses a minimal modification of the original VCP-CLIP pipeline.  
-> Any dataset following the standardized structure (MVTec, VisA, BTAD, MPDD, etc.)  
-> can be used for training and testing.
 
 ---
 
