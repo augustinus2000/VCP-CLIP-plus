@@ -13,34 +13,26 @@ an improved variant of VCP-CLIP that stabilizes training and optimizes performan
 
 ### Installation
 
-#### Clone this repository
+#### 1. Clone this repository
 
 ```bash
 git clone https://github.com/augustinus2000/VCP-CLIP-plus.git
 cd VCP-CLIP-plus
 ```
 
----
-
-## 🛠️ 실험 환경 설정
-본 프로젝트는 Conda 가상환경 + PyTorch CUDA 12.8 환경을 기준으로 합니다. (RTX5090 GPU 사용)
-VSCode 터미널 또는 일반 터미널에서 아래 명령어를 실행하세요.
-
-### 1) Conda 가상환경 생성 및 활성화
+#### 2. Create environment (recommended)
 
 ```bash
-conda create -n samexporter python=3.10 -y
-conda activate samexporter
+conda create -n vcpclip python=3.9 -y
+conda activate vcpclip
 ```
 
-### 2) PyTorch + CUDA 12.8 설치
+#### 3. Install python dependencies
 
 ```bash
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+pip install -r requirements.txt
 ```
-* CUDA 12.8 및 cuDNN 자동 포함
-* 시스템 CUDA Toolkit / cuDNN 설치 불필요
-* 5090 GPU에서 안정적으로 동작
 
 ---
+
 
