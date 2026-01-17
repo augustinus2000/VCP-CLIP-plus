@@ -35,4 +35,117 @@ pip install -r requirements.txt
 
 ---
 
+## Data Preparation
 
+VCP-CLIP+ uses the same dataset structure and preprocessing steps as the original VCP-CLIP.
+
+### MVTec-AD and VisA
+
+#### 1. Download and prepare the original **[MVTec-AD](https://www.mvtec.com/company/research/datasets/mvtec-ad/)** and **[VisA](https://github.com/amazon-science/spot-diff)** datasets to any desired path.  
+   The original dataset format is as follows:
+
+```bash
+path1
+├── mvtec
+    ├── bottle
+        ├── train
+            ├── good
+                ├── 000.png
+        ├── test
+            ├── good
+                ├── 000.png
+            ├── anomaly1
+                ├── 000.png
+            ├── anomaly2
+                ├── 000.png
+        ├── ground_truth
+            ├── anomaly1
+                ├── 000_mask.png
+            ├── anomaly2
+                ├── 000_mask.png
+```
+
+
+```bash
+path2
+├── visa
+    ├── candle
+        ├── Data
+            ├── Images
+                ├── Anomaly
+                    ├── 000.JPG
+                ├── Normal
+                    ├── 0000.JPG
+            ├── Masks
+                ├── Anomaly
+                    ├── 000.png
+    ├── split_csv
+        ├── 1cls.csv
+        ├── 1cls.xlsx
+```
+
+#### 2. Standardize the MVTec-AD and VisA datasets
+
+Run the following script to generate standardized dataset folders:
+```bash
+python dataset/make_dataset_new.py
+```
+
+This will generate:
+```bash
+./dataset/mvisa/data/mvtec
+./dataset/mvisa/data/visa
+```
+
+Then generate the metadata JSON files:
+```bash
+python dataset/make_meta.py
+```
+
+Which produces:
+```bash
+./dataset/mvisa/data/meta_mvtec.json
+./dataset/mvisa/data/meta_visa.json
+```
+
+#### Standardized Dataset Structure
+```bash
+./dataset/mvisa/data
+├── visa
+│   └── candle
+│       ├── train
+│       │   └── good
+│       │       └── visa_0000_000502.bmp
+│       ├── test
+│       │   ├── good
+│       │   │   └── visa_0011_000934.bmp
+│       │   └── anomaly
+│       │       └── visa_000_001000.bmp
+│       └── ground_truth
+│           └── anomaly
+│               └── visa_000_001000.png
+│
+├── mvtec
+│   └── bottle
+│       ├── train
+│       │   └── good
+│       │       └── mvtec_000000.bmp
+│       ├── test
+│       │   ├── good
+│       │   │   └── mvtec_good_000272.bmp
+│       │   └── anomaly
+│       │       └── mvtec_broken_large_000209.bmp
+│       └── ground_truth
+│           └── anomaly
+│               └── mvtec_broken_large_000209.png
+│
+├── meta_mvtec.json
+└── meta_visa.json
+```
+
+> **Note:**  
+> In addition to MVTec-AD and VisA, other datasets such as **BTAD** and **MPDD** can also be  
+> used for training and testing.  
+> As long as their directory structures follow the same format, VCP-CLIP+ will run without issues.
+
+---
