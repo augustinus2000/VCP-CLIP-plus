@@ -167,7 +167,7 @@ Which produces:
 👉 **[Releases](https://github.com/augustinus2000/VCP-CLIP-plus/releases)** section.
 
 This checkpoint was obtained from the version of VCP-CLIP+ that is  
-**most closely aligned with the full-model configuration described in our paper**  
+**aligned with the full-model configuration described in our paper**  
 (currently under review).  
 Although exact performance numbers are not provided here, this weight can be  
 used for inference, visualization, and reproducing the qualitative behavior  
